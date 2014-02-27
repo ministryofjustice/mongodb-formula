@@ -1,0 +1,8 @@
+mongodb:
+  servers:
+    mongodb.local: 27017
+  user: opg-auth
+  password: opg-auth
+  dbname: opg-auth
+  dbpath: /var/lib/mongodb
+  rs: False
