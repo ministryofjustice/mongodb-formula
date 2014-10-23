@@ -107,4 +107,19 @@ mongod:
     - mode: 755
     - source: salt://mongodb/files/create_mongo_user
 
+{% for dbname, definition in mongodb.databases.iteritems() %}
+{{ definition.user }}_on_{{ dbname }}:
+  cmd.run:
+    {% if 'mongodb_admin_password' in pillar %}
+    - name: "create_mongo_user -u admin -p {{ pillar['mongodb_admin_password'] }} {{ definition.dbname }} {{ definition.user }} {{ definition.password }}"
+    {% else %}
+    - name: "create_mongo_user {{ definition.dbname }} {{ definition.user }} {{ definition.password }}"
+    {% endif %}
+    - require:
+      - service: mongod
+      - file: /usr/local/bin/create_mongo_user
+
+{% endfor %}
+
+
 {{ firewall_enable('mongodb',27017,'tcp') }}
