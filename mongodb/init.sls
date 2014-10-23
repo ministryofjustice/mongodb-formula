@@ -100,4 +100,11 @@ mongod:
     - mode: 755
     - source: salt://mongodb/files/restore_mongo_database
 
+/usr/local/bin/create_mongo_user:
+  file.managed:
+    - user: root
+    - group: root
+    - mode: 755
+    - source: salt://mongodb/files/create_mongo_user
+
 {{ firewall_enable('mongodb',27017,'tcp') }}
