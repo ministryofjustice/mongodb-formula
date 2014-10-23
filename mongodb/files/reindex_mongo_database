@@ -1,0 +1,32 @@
+#!/bin/sh
+
+# indexes are of the form:
+#   { pay_by: 1 }
+#   { state: 1, type: 1 }
+# ... as provided to the db.dbname.ensureIndex() call
+
+set -e
+
+while getopts u:p: o; do
+  case "$o" in
+    u)  user="${OPTARG}";;
+    p)  password="${OPTARG}";;
+    [?])  print >&2 "Usage: $0 [-u user] [-p password] {database} {collection} {index_definition} ..."
+          exit 1;;
+  esac
+done
+shift $(( $OPTIND - 1 ))
+
+database=$1
+collection=$1
+shift 2
+indexes=$*
+
+for index in $indexes; do
+  if [ -z "$user" ]; then
+    mongo --eval "db.${database}.ensureIndex( $index )" $database
+  else
+    mongo -u $user -p $password --eval "db.${collection}.ensureIndex( $index )" $database
+  fi
+done
+

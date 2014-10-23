@@ -1,70 +1,103 @@
-{% from "mongodb/map.jinja" import mongodb with context %}
+{% from 'mongodb/map.jinja' import mongodb with context %}
+{% from 'logstash/lib.sls' import logship with context %}
+{% from 'firewall/lib.sls' import firewall_enable with context %}
 
-mongodb-server:
-  pkg:
-    - installed
+mongodb-org-apt-key:
+  cmd.run:
+    - name: apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 7F0CEB10
+    - unless: apt-key list | grep '7F0CEB10'
 
-python-pymongo:
-  pkg:
-    - installed
+mongodb-org-deb:
+  pkgrepo.managed:
+    - humanname: Official MongoDB Org Repo
+    - name: deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen
+    - file: /etc/apt/sources.list.d/mongodb-org.list
     - require:
-      - pkg: mongodb-server
+      - cmd: mongodb-org-apt-key
+
+mongodb-org:
+  pkg.installed:
+    - require:
+      - pkgrepo: mongodb-org-deb
+
+/usr/local/bin/preconfigure_mongodb_database:
+  file.managed:
+    - mode: 755
+    - user: root
+    - group: root 
+    - source: salt://mongodb/files/preconfigure_mongodb_database
+
+preconfigure-mongodb-database:
+  cmd.run:
+    {% if 'mongodb_admin_password' in pillar %}
+    - name: "/usr/local/bin/preconfigure_mongodb_database {{mongodb.dbpath}} {{ pillar['mongodb_admin_password']}}"
+    {% else %}
+    - name: "/usr/local/bin/preconfigure_mongodb_database {{mongodb.dbpath}}"
+    {% endif %}
+    - unless: test -f {{mongodb.dbpath}}/DB_IS_CONFIGURED
+    - require:
+      - pkg: mongodb-org
+      - file: /usr/local/bin/preconfigure_mongodb_database
+      - file: {{mongodb.dbpath}}
 
 mongod:
-  service:
-    - name: mongodb
-    - running
+  service.running:
+    - name: mongod
     - enable: True
+    - require:
+      - cmd: preconfigure-mongodb-database
+      - file: {{mongodb.dbpath}}
     - watch:
-      - pkg: mongodb-server
-      - file: /etc/mongodb.conf
+      - file: /etc/mongod.conf
 
-/etc/mongodb.conf:
+/etc/mongod.conf:
   file:
     - managed
-    - source: salt://mongodb/mongodb.conf
+    - source: salt://mongodb/templates/mongod.conf
     - template: jinja
     - user: root
     - group: root
     - mode: 644
+    - require:
+      - cmd: preconfigure-mongodb-database
 
-
-{{ mongodb.dbpath }}:
-  file:
-    - directory
+{{mongodb.dbpath}}:
+  file.directory:
     - user: mongodb
     - group: mongodb
     - mode: 750
+    - makedirs: True
     - require:
-      - pkg: mongodb-server
+      - pkg: mongodb-org
 
-wait-for-mongodb-server:
-  cmd:
-    - run
-    - name: 'while ! [ -e /tmp/mongodb-27017.sock ]; do sleep 1; done'
-    - unless: 'test -e /tmp/mongodb-27017.sock'
-    - require:
-      - service: mongod
-      - file: {{ mongodb.dbpath }}
-
-{% if 'mongodb' in pillar %}
-{% for service, definition in pillar['mongodb'].iteritems() %}
-
-{{definition['user']}}_on_{{service}}:
-  mongodb_user:
-    - present
-    - name: {{definition['user']}}
-    - host: {{definition['servers'].keys()[0]}}
-    - port: {{definition['servers'].values()[0]}}
-    - passwd: {{definition['password']}}
-    - database: {{definition['dbname']}}
-    - require:
-      - pkg: python-pymongo
-      - service: mongod
-      - cmd: wait-for-mongodb-server
-
-{% endfor %}
+{% if mongodb.key_string %}
+/etc/mongodb.key:
+  file.managed:
+   - user: mongodb
+   - group: mongodb
+   - mode: 600
+   - contents_pillar: mongodb:key_string
 {% endif %}
 
-{% from 'firewall/lib.sls' import firewall_enable with  context %}
+/usr/local/bin/initiate_replica_set:
+  file.managed:
+    - user: root
+    - group: root
+    - mode: 755
+    - source: salt://mongodb/files/initiate_replica_set
+
+/usr/local/bin/reindex_mongo_database:
+  file.managed:
+    - user: root
+    - group: root
+    - mode: 755
+    - source: salt://mongodb/files/reindex_mongo_database
+
+/usr/local/bin/restore_mongo_database:
+  file.managed:
+    - user: root
+    - group: root
+    - mode: 755
+    - source: salt://mongodb/files/restore_mongo_database
+
 {{ firewall_enable('mongodb',27017,'tcp') }}
