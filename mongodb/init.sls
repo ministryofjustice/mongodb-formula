@@ -189,4 +189,14 @@ mongod:
 
 {% endif %}
 
+/etc/backup.d/30.mongodb:
+  file:
+    - managed
+    - user: root
+    - group: root
+    - mode: 600
+    - source: salt://mongodb/templates/backupninja.mongodb
+    - template: jinja
+    - onlyif: test -d /etc/backup.d
+
 {{ firewall_enable('mongodb',27017,'tcp') }}
