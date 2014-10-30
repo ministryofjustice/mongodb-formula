@@ -18,15 +18,22 @@ done
 shift $(( $OPTIND - 1 ))
 
 database=$1
-collection=$1
+collection=$2
 shift 2
-indexes=$*
 
-for index in $indexes; do
-  if [ -z "$user" ]; then
-    mongo --eval "db.${database}.ensureIndex( $index )" $database
-  else
-    mongo -u $user -p $password --eval "db.${collection}.ensureIndex( $index )" $database
-  fi
+if [ -z "$user" ]; then
+  conn_str="mongo --quiet"
+else
+  conn_str="mongo --quiet -u $user -p $password"
+fi
+
+is_master=`$conn_str $database --eval "db.isMaster()['ismaster']"`
+if [ "$is_master" != "true" ]; then
+  echo "$0: Not master, no need to reindex $database:$collection"
+  exit 0;
+fi
+
+for index in "$@"; do
+  $conn_str --eval "printjson(db.${collection}.ensureIndex( $index ))" $database
 done
 

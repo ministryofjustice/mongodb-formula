@@ -173,13 +173,13 @@ mongod:
     - mode: 755
     - source: salt://mongodb/files/create_mongo_user
 
-{% for dbname, definition in mongodb.databases.iteritems() %}
-{{ definition.user }}_on_{{ dbname }}:
+{% for dbname, db_def in mongodb.configuration.databases.iteritems() %}
+{{ db_def.owner_user }}_on_{{ dbname }}:
   cmd.run:
     {% if 'mongodb_admin_password' in pillar %}
-    - name: "create_mongo_user -u admin -p {{ pillar['mongodb_admin_password'] }} {{ definition.dbname }} {{ definition.user }} {{ definition.password }}"
+    - name: "create_mongo_user -u admin -p {{ pillar['mongodb_admin_password'] }} {{ dbname }} {{ db_def.owner_user }} {{ db_def.owner_password }}"
     {% else %}
-    - name: "create_mongo_user {{ definition.dbname }} {{ definition.user }} {{ definition.password }}"
+    - name: "create_mongo_user {{ dbname }} {{ db_def.owner_user }} {{ db_def.owner_password }}"
     {% endif %}
     - require:
       - service: mongod
@@ -192,9 +192,10 @@ mongod:
 {%     for index_def in coll_def.indexes %}
 create_index_{{ dbname }}__{{coll_def.name}}__{{index_def.name}}:
   cmd.run:
-    - name: "reindex_mongo_database -u admin -p {{ pillar['mongodb_admin_password'] }} {{ dbname }} {{ coll_def.name }} '{{ index_def.key }}'"
+    - name: "reindex_mongo_database -u {{db_def.owner_user}} -p {{ db_def.owner_password }} {{ dbname }} {{ coll_def.name }} '{{ index_def.key }}'"
     - require:
       - file: /usr/local/bin/reindex_mongo_database
+      - cmd: {{ db_def.owner_user }}_on_{{ dbname }}
 {%     endfor %}
 {%   endfor %}
 {% endfor %}

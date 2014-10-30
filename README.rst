@@ -40,10 +40,11 @@ be gleaned from the Mongo documentation, but in brief:
 
 3. Add the replica set, with:
 
-   initiate_replica_set -u {user} -p {password} {master-node-fqdn}
+   initiate_replica_set -u {user} -p {password} {replica-set-name} {master-node-fqdn}
 
 4. Recover the mongo databases
 
    # NB: The default backup location of /var/backups/mongodb is usually correct
    recover_mongo_database -u {user} -p {password} [ -d {backup_extract_location} ]
 
+5. Re-run Salt to add users and indexes
