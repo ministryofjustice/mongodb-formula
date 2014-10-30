@@ -187,6 +187,18 @@ mongod:
 
 {% endfor %}
 
+{% for dbname, db_def in mongodb.configuration.databases.iteritems() %}
+{%   for coll_def in db_def.collections %}
+{%     for index_def in coll_def.indexes %}
+create_index_{{ dbname }}__{{coll_def.name}}__{{index_def.name}}:
+  cmd.run:
+    - name: "reindex_mongo_database -u admin -p {{ pillar['mongodb_admin_password'] }} {{ dbname }} {{ coll_def.name }} '{{ index_def.key }}'"
+    - require:
+      - file: /usr/local/bin/reindex_mongo_database
+{%     endfor %}
+{%   endfor %}
+{% endfor %}
+
 {% endif %}
 
 /etc/backup.d/30.mongodb:
