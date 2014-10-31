@@ -8,7 +8,9 @@ packages available from the MongoDB Official Repo.
 Also Handles a basic installation of the packaged mongo, in case we are
 migrating from that.
 
-** To use the Official Repo, set 'mongodb.use_native_packages: False' **
+**To use the MongoDB Official Repo on Ubuntu 12.04, set 'mongodb.use_native_packages: False'**
+
+**To use the Ubuntu Repo on Ubuntu 14.04, set 'mongodb.use_native_packages: True'**
 
 
 
@@ -16,7 +18,7 @@ Backup and Recovery
 -------------------
 
 If backupninja is configured, this formula will automatically configure an
-hourly backup of Mongo to the /var/backuups/mongodb directory.
+hourly ``mongodump`` backup of Mongo to the /var/backuups/mongodb directory.
 
 This in turn can be backed up to a remote location -- see backupninja-formula
 for how to do this.
@@ -24,12 +26,13 @@ for how to do this.
 To recover, and to dump/restore into future versions, there are various
 helpers:
 
-- initiate_replica_set
-- recover_mongo_database
-- reindex_mongo_database
+- ``initiate_replica_set`` - wrapper around replicaSet create/add
+- ``recover_mongo_database`` - wrpper around mongorestore
+- ``reindex_mongo_database`` - wrapper around db.<collection>.createIndex
 
-Each tool takes a '-u {user}' and '-p {password}' option, use the admin
-password detailed in the pillar data.
+Each tool takes a '-u {user}' and '-p {password}' option: use the admin
+account for ``initiate_replica_set`` and ``recover_mongo_database``. Use the
+per-database owner account for ``reindex_mongo_database``.
 
 Full understanding of Mongo recovery and replica set recovery techniques should
 be gleaned from the Mongo documentation, but in brief:
@@ -38,13 +41,17 @@ be gleaned from the Mongo documentation, but in brief:
 
 2. Salt should have ensured that a basic database is configured, and indexed
 
-3. Add the replica set, with:
+3. Add the replica set, with::
 
    initiate_replica_set -u {user} -p {password} {replica-set-name} {master-node-fqdn}
 
-4. Recover the mongo databases
+4. Recover the mongo databases::
 
    # NB: The default backup location of /var/backups/mongodb is usually correct
    recover_mongo_database -u {user} -p {password} [ -d {backup_extract_location} ]
 
 5. Re-run Salt to add users and indexes
+
+6. Re-add replica set nodes with::
+
+   initiate_replica_set -u {user} -p {password} {replica-set-name} {master-node-fqdn} {secondary-node-fqdn} {teritary-node-fqdn} ...
