@@ -8,10 +8,12 @@ packages available from the MongoDB Official Repo.
 Also Handles a basic installation of the packaged mongo, in case we are
 migrating from that.
 
-**To use the MongoDB Official Repo on Ubuntu 12.04, set 'mongodb.use_native_packages: False'**
+**Please note that:**
 
-**To use the Ubuntu Repo on Ubuntu 14.04, set 'mongodb.use_native_packages: True'**
+- **To use the MongoDB Official Repo on Ubuntu 12.04, set 'mongodb.use_native_packages: False'**
+- **To use the Ubuntu Repo on Ubuntu 14.04, set 'mongodb.use_native_packages: True'**
 
+**See UPGRADING.md for more info on this**
 
 
 Backup and Recovery
@@ -41,17 +43,22 @@ be gleaned from the Mongo documentation, but in brief:
 
 2. Salt should have ensured that a basic database is configured, and indexed
 
-3. Add the replica set, with::
+3. Add the replica set, with
+
+::
 
    initiate_replica_set -u {user} -p {password} {replica-set-name} {master-node-fqdn}
 
-4. Recover the mongo databases::
+4. Recover the mongo databases
+
+::
 
    # NB: The default backup location of /var/backups/mongodb is usually correct
    recover_mongo_database -u {user} -p {password} [ -d {backup_extract_location} ]
 
 5. Re-run Salt to add users and indexes
 
-6. Re-add replica set nodes with::
+6. Re-add replica set nodes with
 
+::
    initiate_replica_set -u {user} -p {password} {replica-set-name} {master-node-fqdn} {secondary-node-fqdn} {teritary-node-fqdn} ...
