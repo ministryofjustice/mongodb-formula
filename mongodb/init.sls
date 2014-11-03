@@ -86,24 +86,24 @@ mongodb-org:
     - require:
       - pkgrepo: mongodb-org-deb
 
-/usr/local/bin/preconfigure_mongodb_database:
+/usr/local/bin/mongo_preconfigure_mongodb_database:
   file.managed:
     - mode: 755
     - user: root
     - group: root 
-    - source: salt://mongodb/files/preconfigure_mongodb_database
+    - source: salt://mongodb/files/mongo_preconfigure_mongodb_database
 
 preconfigure-mongodb-database:
   cmd.run:
     {% if 'mongodb_admin_password' in pillar %}
-    - name: "/usr/local/bin/preconfigure_mongodb_database {{mongodb.dbpath}} {{ pillar['mongodb_admin_password']}}"
+    - name: "/usr/local/bin/mongo_preconfigure_mongodb_database {{mongodb.dbpath}} {{ pillar['mongodb_admin_password']}}"
     {% else %}
-    - name: "/usr/local/bin/preconfigure_mongodb_database {{mongodb.dbpath}}"
+    - name: "/usr/local/bin/mongo_preconfigure_mongodb_database {{mongodb.dbpath}}"
     {% endif %}
     - unless: test -f {{mongodb.dbpath}}/DB_IS_CONFIGURED
     - require:
       - pkg: mongodb-org
-      - file: /usr/local/bin/preconfigure_mongodb_database
+      - file: /usr/local/bin/mongo_preconfigure_mongodb_database
       - file: {{mongodb.dbpath}}
 
 mongod:
@@ -145,45 +145,61 @@ mongod:
    - contents_pillar: mongodb:key_string
 {% endif %}
 
-/usr/local/bin/initiate_replica_set:
+/usr/local/bin/mongo_initiate_replica_set:
   file.managed:
     - user: root
     - group: root
     - mode: 755
-    - source: salt://mongodb/files/initiate_replica_set
+    - source: salt://mongodb/files/mongo_initiate_replica_set
 
-/usr/local/bin/reindex_mongo_database:
+/usr/local/bin/mongo_reindex_database:
   file.managed:
     - user: root
     - group: root
     - mode: 755
-    - source: salt://mongodb/files/reindex_mongo_database
+    - source: salt://mongodb/files/mongo_reindex_database
 
-/usr/local/bin/restore_mongo_database:
+/usr/local/bin/mongo_restore_database:
   file.managed:
     - user: root
     - group: root
     - mode: 755
-    - source: salt://mongodb/files/restore_mongo_database
+    - source: salt://mongodb/files/mongo_restore_database
+
+/usr/local/bin/mongo_create_user:
+  file.managed:
+    - user: root
+    - group: root
+    - mode: 755
+    - source: salt://mongodb/files/mongo_create_user
 
 /usr/local/bin/create_mongo_user:
-  file.managed:
-    - user: root
-    - group: root
-    - mode: 755
-    - source: salt://mongodb/files/create_mongo_user
+  file.absent
+
+/usr/local/bin/restore_mongo_database:
+  file.absent
+
+/usr/local/bin/reindex_mongo_database:
+  file.absent
+
+/usr/local/bin/initiate_replica_set:
+  file.absent
+
+/usr/local/bin/preconfigure_mongodb_database:
+  file.absent
+
 
 {% for dbname, db_def in mongodb.configuration.databases.iteritems() %}
 {{ db_def.owner_user }}_on_{{ dbname }}:
   cmd.run:
     {% if 'mongodb_admin_password' in pillar %}
-    - name: "create_mongo_user -u admin -p {{ pillar['mongodb_admin_password'] }} {{ dbname }} {{ db_def.owner_user }} {{ db_def.owner_password }}"
+    - name: "mongo_create_user -u admin -p {{ pillar['mongodb_admin_password'] }} {{ dbname }} {{ db_def.owner_user }} {{ db_def.owner_password }}"
     {% else %}
-    - name: "create_mongo_user {{ dbname }} {{ db_def.owner_user }} {{ db_def.owner_password }}"
+    - name: "mongo_create_user {{ dbname }} {{ db_def.owner_user }} {{ db_def.owner_password }}"
     {% endif %}
     - require:
       - service: mongod
-      - file: /usr/local/bin/create_mongo_user
+      - file: /usr/local/bin/mongo_create_user
 
 {% endfor %}
 
@@ -192,9 +208,9 @@ mongod:
 {%     for index_def in coll_def.indexes %}
 create_index_{{ dbname }}__{{coll_def.name}}__{{index_def.name}}:
   cmd.run:
-    - name: "reindex_mongo_database -u {{db_def.owner_user}} -p {{ db_def.owner_password }} {{ dbname }} {{ coll_def.name }} '{{ index_def.key }}'"
+    - name: "mongo_reindex_database -u {{db_def.owner_user}} -p {{ db_def.owner_password }} {{ dbname }} {{ coll_def.name }} '{{ index_def.key }}'"
     - require:
-      - file: /usr/local/bin/reindex_mongo_database
+      - file: /usr/local/bin/mongo_reindex_database
       - cmd: {{ db_def.owner_user }}_on_{{ dbname }}
 {%     endfor %}
 {%   endfor %}
