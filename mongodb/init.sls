@@ -2,6 +2,10 @@
 {% from 'logstash/lib.sls' import logship with context %}
 {% from 'firewall/lib.sls' import firewall_enable with context %}
 
+include:
+  - firewall
+  - logstash.client
+
 {% if mongodb.use_native_package %}
 mongodb-server:
   pkg:
