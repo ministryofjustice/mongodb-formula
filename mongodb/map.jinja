@@ -1,13 +1,26 @@
 {% set mongodb = salt['grains.filter_by']({
-    'Debian': {
-                'servers': {
-                    'mongodb.local': '27017',
-                },             
-            'user': 'opg-auth',
-            'password': 'opg-auth',
-            'dbname': 'opg-auth',
-            'dbpath': '/var/lib/mongodb',
-            'rs': 'False',
+    'Ubuntu-12.04': {
+        'dbpath': '/data',
+        'databases': {},
+        'configuration': {
+          'databases': {}
+        },
+        'rs': None,
+        'rs_members': [],
+        'auth': None,
+        'key_string': None,
+        'use_native_package': True,
     },
-}, merge=salt['pillar.get']('mongodb',{})) %}
-
+    'Ubuntu-14.04': {
+        'dbpath': '/data',
+        'databases': {},
+        'configuration': {
+          'databases': {}
+        },
+        'rs': None,
+        'rs_members': [],
+        'auth': None,
+        'key_string': None,
+        'use_native_package': False,
+    }
+}, grain='osfinger', merge=salt['pillar.get']('mongodb',{})) %}
