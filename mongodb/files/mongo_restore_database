@@ -8,7 +8,6 @@ restore_files=true
 user=''
 password=''
 
-default_backup_files=""
 
 while getopts d:u:p: o; do
   case "$o" in
@@ -20,6 +19,12 @@ while getopts d:u:p: o; do
   esac
 done
 shift $(( $OPTIND - 1 ))
+
+cd $backup_dir
+
+# By default, restore all bson dumps bar system.indexes and system.users
+# since we will re-add users and indexes ourselves.
+default_backup_files=$( find . -name \*.bson | grep -v system.indexes | grep -v system.users )
 
 backup_files=$*
 
@@ -35,5 +40,5 @@ fi
 
 for backup_file in $backup_files; do
   echo "Restoring $backup_file from $backup_dir"
-  $RESTORE_COMMAND "${backup_dir}/${backup_file}"
+  $RESTORE_COMMAND ${backup_file}
 done
