@@ -6,6 +6,7 @@ include:
   - firewall
   - logstash.client
 
+
 {% if mongodb.use_native_package %}
 mongodb-server:
   pkg:
@@ -14,14 +15,6 @@ mongodb-server:
 mongodb-clients:
   pkg:
     - installed
-
-
-python-pymongo:
-  pkg:
-    - installed
-    - require:
-      - pkg: mongodb-server
-
 
 # DO NO include '- reload: True' : Unsupported on ubuntu. Was causing mongodb process to exit, and subsequent wait-for-mongodb-server to hang indefiniately during initial build.
 mongod:
@@ -64,9 +57,6 @@ mongodb-server:
   pkg.purged
 
 mongodb-clients:
-  pkg.purged
-
-python-pymongo:
   pkg.purged
 
 mongodb-org-apt-key:
@@ -221,6 +211,11 @@ create_index_{{ dbname }}__{{coll_def.name}}__{{index_def.name}}:
 {% endfor %}
 
 {% endif %}
+
+# pymongo is required for the main mongodb sensu check
+python-pymongo:
+  pkg:
+    - installed
 
 /etc/backup.d/30.mongodb:
   file:

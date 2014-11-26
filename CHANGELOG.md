@@ -2,6 +2,7 @@ CURRENT
 -------
 
 * Use MongoDB Org repo for official and latest versions
+* Include python-pymongo for sensu checks
 
 Version v1.0.0
 --------------

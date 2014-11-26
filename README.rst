@@ -29,11 +29,11 @@ To recover, and to dump/restore into future versions, there are various
 helpers:
 
 - ``mongo_initiate_replica_set`` - wrapper around replicaSet create/add
-- ``mongo_recover_database`` - wrpper around mongorestore
+- ``mongo_restore_database`` - wrpper around mongorestore
 - ``mongo_reindex_database`` - wrapper around db.<collection>.createIndex
 
 Each tool takes a '-u {user}' and '-p {password}' option: use the admin
-account for ``mongo_initiate_replica_set`` and ``mongo_recover_database``. Use the
+account for ``mongo_initiate_replica_set`` and ``mongo_restore_database``. Use the
 per-database owner account for ``mongo_reindex_database``.
 
 Full understanding of Mongo recovery and replica set recovery techniques should
@@ -54,7 +54,10 @@ be gleaned from the Mongo documentation, but in brief:
 ::
 
    # NB: The default backup location of /var/backups/mongodb is usually correct
-   mongo_recover_database -u {user} -p {password} [ -d {backup_extract_location} ]
+   #     Without a list of database bson dump files to recover, the tool will
+   #     recover all bson files found under the backup dir, excluding
+   #     system.indexes and system.users (which should be recovered via salt)
+   mongo_restore_database -u {user} -p {password} [ -d {backup_extract_location} ]
 
 5. Re-run Salt to add users and indexes
 
@@ -62,5 +65,5 @@ be gleaned from the Mongo documentation, but in brief:
 
 ::
 
-   mongo_initiate_replica_set -u {user} -p {password} {replica-set-name} {master-node-fqdn} {secondary-node-fqdn} {teritary-node-fqdn} ...
+   mongo_initiate_replica_set -u {user} -p {password} -a {replica-set-name} {master-node-fqdn} {secondary-node-fqdn} {teritary-node-fqdn} ...
 
