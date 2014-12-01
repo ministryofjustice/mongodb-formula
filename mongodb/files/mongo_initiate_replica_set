@@ -4,12 +4,13 @@ set -e
 
 add=false
 
-while getopts u:p:a o; do
+while getopts u:p:d:a o; do
   case "$o" in
     u)  user="${OPTARG}";;
     p)  password="${OPTARG}";;
+    d)  delay="${OPTARG}";;
     a)  add=true;;
-    [?])  echo "Usage: $0 [-u user] [-p password] [-a] rs_name master_node secondary_node ..." >&2
+    [?])  echo "Usage: $0 [-u user] [-p password] [-d delay] [-a] rs_name master_node secondary_node ..." >&2
           exit 1;;
   esac
 done
@@ -24,4 +25,8 @@ if $add; then
   for secondary_node in $*; do
     mongo -u $user -p $password --eval "printjson(rs.add('${secondary_node}:27017'))" admin
   done
+fi
+
+if [ -n "${delay}" ]; then
+  sleep $delay
 fi
