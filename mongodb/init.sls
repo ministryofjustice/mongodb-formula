@@ -245,3 +245,4 @@ python-pymongo:
     - onlyif: test -d /etc/backup.d
 
 {{ firewall_enable('mongodb',27017,'tcp') }}
+{{ logship('mongodb_log',  '/var/log/mongodb/mongodb.log', 'mongodb_log', ['mongodb', 'log'],  'json') }}
