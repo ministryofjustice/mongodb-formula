@@ -99,6 +99,8 @@ preconfigure-mongodb-database:
       - pkg: mongodb-org
       - file: /usr/local/bin/mongo_preconfigure_mongodb_database
       - file: {{mongodb.dbpath}}
+    - watch_in:
+      - service: mongod
 
 mongod:
   service.running:
