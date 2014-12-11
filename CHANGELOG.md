@@ -1,3 +1,8 @@
+CURRENT
+-------
+
+* Add 'auto_initiate_replica_set_params' pillar to auto-configure the replica set
+
 v2.1.0
 ------
 

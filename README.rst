@@ -67,3 +67,25 @@ be gleaned from the Mongo documentation, but in brief:
 
    mongo_initiate_replica_set -u {user} -p {password} -a {replica-set-name} {master-node-fqdn} {secondary-node-fqdn} {teritary-node-fqdn} ...
 
+Automated Setup for Dev/Test
+----------------------------
+
+This Salt Formula by design does not set up a replica set by default. This is
+because its setup is typically order dependent -- you would generally set up
+a basic replica set, then restore data, then add indexes et al.
+
+Hence, the formula effectively pauses the salt configuration until a basic
+replica set is added.
+
+In the case of dev/test setups though, where an empty dataset can be used, it
+can be useful to get MongoDB completely set up.
+
+In this case, set the `mongodb.configuration.auto_initiate_replica_set_params`
+to be the options needing to be passed to `mongo_initiate_replica_set`. eg::
+
+    mongodb:
+      configuration:
+        auto_initiate_replica_set_params: '-d 3 mongodb-01.local'
+
+NB: typically a small delay (the '-d 3' should be used, to give the replica set
+time to initiate.

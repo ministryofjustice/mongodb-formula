@@ -99,6 +99,8 @@ preconfigure-mongodb-database:
       - pkg: mongodb-org
       - file: /usr/local/bin/mongo_preconfigure_mongodb_database
       - file: {{mongodb.dbpath}}
+    - watch_in:
+      - service: mongod
 
 mongod:
   service.running:
@@ -182,6 +184,18 @@ mongod:
 /usr/local/bin/preconfigure_mongodb_database:
   file.absent
 
+{% if mongodb.configuration.auto_initiate_replica_set_params %}
+auto_initiate_replica_set:
+  cmd.run:
+    {% if 'mongodb_admin_password' in pillar %}
+    - name: "mongo_initiate_replica_set -u admin -p {{ pillar['mongodb_admin_password'] }} {{ mongodb.configuration.auto_initiate_replica_set_params }}"
+    {% else %}
+    - name: "mongo_initiate_replica_set {{ mongodb.configuration.auto_initiate_replica_set_params }}"
+    {% endif %}
+    - require:
+      - service: mongod
+      - file: /usr/local/bin/mongo_create_user
+{% endif %}
 
 {% for dbname, db_def in mongodb.configuration.databases.iteritems() %}
 {{ db_def.owner_user }}_on_{{ dbname }}:
@@ -194,6 +208,9 @@ mongod:
     - require:
       - service: mongod
       - file: /usr/local/bin/mongo_create_user
+{% if mongodb.configuration.auto_initiate_replica_set_params %}
+      - cmd: auto_initiate_replica_set
+{% endif %}
 
 {% endfor %}
 
@@ -228,3 +245,4 @@ python-pymongo:
     - onlyif: test -d /etc/backup.d
 
 {{ firewall_enable('mongodb',27017,'tcp') }}
+{{ logship('mongodb_log',  '/var/log/mongodb/mongodb.log', 'mongodb_log', ['mongodb', 'log'],  'json') }}
