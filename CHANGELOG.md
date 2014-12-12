@@ -1,7 +1,8 @@
-CURRENT
--------
+v2.2.0
+------
 
 * Add 'auto_initiate_replica_set_params' pillar to auto-configure the replica set
+* Ship logs to logstash via beaver.
 
 v2.1.0
 ------
