@@ -35,7 +35,7 @@ fi
 mongo -u $user -p $password --eval "printjson(rs.initiate({'_id': '${rs_name}', 'members': [{ '_id': 0, 'host': '${master_node}:27017'}]}))" admin
 if $add; then
   for secondary_node in $*; do
-    mongo -u $user -p $password --eval "printjson(rs.add('${secondary_node}:27017'))" admin
+    mongo -u $user -p $password --eval "printjson(rs.add('${secondary_node}:27017', priority: 0, hidden: false))" admin
   done
 fi
 
