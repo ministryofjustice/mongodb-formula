@@ -1,3 +1,9 @@
+CURRENT
+-------
+
+* Default to 'noprimarybackup = true' for mongodb backupninja backup.
+
+
 v2.2.0
 ------
 

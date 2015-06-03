@@ -21,17 +21,17 @@ if [ -z $admin_password ];
 then
   connection_str="mongo"
 else
-  connection_str="mongo -u $admin_user -p $admin_password"
+  connection_str="mongo --port 27017 -u $admin_user -p $admin_password --authenticationDatabase admin"
 fi
 
 is_master=`$connection_str admin --quiet --eval "db.isMaster()['ismaster']"`
 if [ "$is_master" = "true" ]; then
   # And the user is not present
-  output=`$connection_str admin --quiet --eval "printjson(db.getSiblingDB('$db_name').getUser('$user_name'))"`
+  output=`$connection_str --quiet --eval "printjson(db.getSiblingDB('$db_name').getUser('$user_name'))"`
   if [ "X$output" = 'Xnull' ]; then
-    $connection_str admin --quiet --eval "db.getSiblingDB('$db_name').addUser('$user_name','$user_pass');"
+    $connection_str --eval "db.getSiblingDB('$db_name').createUser({user: '$user_name', pwd: '$user_pass', roles: [ { role: \"readWrite\", db: '$db_name'}] } )"
   else
     # The user is present, but the password may have changed, so let's update it
-    $connection_str admin --quiet --eval "db.getSiblingDB('$db_name').changeUserPassword('$user_name','$user_pass');"
+    $connection_str --quiet --eval "db.getSiblingDB('$db_name').changeUserPassword('$user_name','$user_pass');"
   fi
 fi

@@ -5,6 +5,7 @@
 include:
   - firewall
   - logstash.client
+  - .backup
 
 
 {% if mongodb.use_native_package %}
@@ -27,6 +28,15 @@ mongod:
       - file: {{mongodb.dbpath}}
       - file: /etc/mongodb.conf
       - file: /etc/init/mongodb.conf
+      - file: /etc/mongo.pem
+
+/etc/mongo.pem:
+  file.managed:
+    - contents_pillar: mongodb:pem
+    - mode: 600
+    - user: mongodb
+    - watch_in:
+      - service: mongod
 
 /etc/init/mongodb.conf:
   file.managed:
@@ -53,6 +63,10 @@ mongod:
 
 {% else %}
 
+install-tls-dependencies:
+  pkg.installed:
+    - name: python-openssl
+
 mongodb-server:
   pkg.purged
 
@@ -70,13 +84,14 @@ mongodb-org-apt-key:
 mongodb-org-deb:
   pkgrepo.managed:
     - humanname: Official MongoDB Org Repo
-    - name: deb http://downloads-distro.mongodb.org/repo/ubuntu-upstart dist 10gen
+    - name: deb http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.0 multiverse
     - file: /etc/apt/sources.list.d/mongodb-org.list
     - require:
       - cmd: mongodb-org-apt-key
 
 mongodb-org:
   pkg.installed:
+    - version: 3.0.3
     - require:
       - pkgrepo: mongodb-org-deb
 
@@ -84,7 +99,7 @@ mongodb-org:
   file.managed:
     - mode: 755
     - user: root
-    - group: root 
+    - group: root
     - source: salt://mongodb/files/mongo_preconfigure_mongodb_database
 
 preconfigure-mongodb-database:
@@ -111,6 +126,15 @@ mongod:
       - file: {{mongodb.dbpath}}
     - watch:
       - file: /etc/mongod.conf
+      - file: /etc/mongo.pem
+
+/etc/mongo.pem:
+  file.managed:
+    - contents_pillar: mongodb:pem
+    - mode: 600
+    - user: mongodb
+    - watch_in:
+      - service: mongod
 
 /etc/mongod.conf:
   file:
