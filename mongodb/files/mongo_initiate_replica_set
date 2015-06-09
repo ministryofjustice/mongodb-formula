@@ -40,7 +40,6 @@ mongo -u $user -p $password --eval "printjson(rs.add({'host': '${secondary_node}
 mongo -u $user -p $password --eval "printjson(rs.add({'host': '${priority_node}', 'priority': 0}))" admin
 
 
-
 if [ -n "${delay}" ]; then
   sleep $delay
 fi

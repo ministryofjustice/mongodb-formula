@@ -17,7 +17,7 @@ hard_stop_mongod() {
     sleep 2
   fi
   if ( pidof /usr/bin/mongod >/dev/null ); then
-    killall /usr/bin/mongod
+    killall mongod
   else
     return
   fi
