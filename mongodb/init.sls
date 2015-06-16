@@ -124,6 +124,7 @@ mongod:
     - require:
       - cmd: preconfigure-mongodb-database
       - file: {{mongodb.dbpath}}
+      - file: /etc/mongodb.key
     - watch:
       - file: /etc/mongod.conf
       - file: /etc/mongo.pem
@@ -219,6 +220,7 @@ auto_initiate_replica_set:
     - require:
       - service: mongod
       - file: /usr/local/bin/mongo_create_user
+      - file: /etc/mongodb.key
 {% endif %}
 
 {% for dbname, db_def in mongodb.configuration.databases.iteritems() %}

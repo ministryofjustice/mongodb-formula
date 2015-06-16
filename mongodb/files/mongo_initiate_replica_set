@@ -23,7 +23,7 @@ priority_node=$4
 
 shift 2
 
-WAIT_FOR_MONGOD=5
+WAIT_FOR_MONGOD=60
 while [ $WAIT_FOR_MONGOD -gt 0 ]; do
   mongo -u $user -p $password --eval "pwd()" admin >/dev/null 2>&1 && break
   WAIT_FOR_MONGOD=$(( $WAIT_FOR_MONGOD - 1 ))
