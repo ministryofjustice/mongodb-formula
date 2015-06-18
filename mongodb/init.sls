@@ -38,11 +38,6 @@ mongod:
     - watch_in:
       - service: mongod
 
-/etc/init/mongodb.conf:
-  file.managed:
-    - source: salt://mongodb/templates/native/upstart.conf
-    - template: jinja
-
 /etc/mongodb.conf:
   file:
     - managed
