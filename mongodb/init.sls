@@ -27,7 +27,6 @@ mongod:
       - pkg: mongodb-server
       - file: {{mongodb.dbpath}}
       - file: /etc/mongodb.conf
-      - file: /etc/init/mongodb.conf
       - file: /etc/mongo.pem
 
 /etc/mongo.pem:
