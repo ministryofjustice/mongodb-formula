@@ -6,6 +6,7 @@ include:
   - firewall
   - logstash.client
   - .backup
+  - .logrotate
 
 
 {% if mongodb.use_native_package %}
