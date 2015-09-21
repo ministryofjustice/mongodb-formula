@@ -6,6 +6,7 @@ include:
   - firewall
   - logstash.client
   - .backup
+  - backupninja
   - .logrotate
 
 
@@ -21,7 +22,7 @@ mongodb-clients:
 # DO NO include '- reload: True' : Unsupported on ubuntu. Was causing mongodb process to exit, and subsequent wait-for-mongodb-server to hang indefiniately during initial build.
 mongod:
   service:
-    - name: mongodb
+    - name: mongod
     - running
     - enable: True
     - watch:
@@ -86,7 +87,7 @@ mongodb-org-deb:
 
 mongodb-org:
   pkg.installed:
-    - version: 3.0.3
+    - version: 3.0.6
     - require:
       - pkgrepo: mongodb-org-deb
 

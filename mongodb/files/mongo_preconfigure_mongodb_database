@@ -11,15 +11,16 @@ service_name="mongod"
 
 hard_stop_mongod() {
   if !( pidof /usr/bin/mongod >/dev/null ); then
-    return
+    return 0
   fi
   if stop mongod; then
     sleep 2
+    return 0
   fi
   if ( pidof /usr/bin/mongod >/dev/null ); then
     killall mongod
   else
-    return
+    return 0
   fi
   sleep 2
   if ( pidof /usr/bin/mongod >/dev/null ); then
