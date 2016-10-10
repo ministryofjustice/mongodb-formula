@@ -5,7 +5,7 @@ mongodb
 Formula to set up and configure the mongodb server based around the
 packages available from the MongoDB Official Repo.
 
-Also Handles a basic installation of the packaged mongo, in case we are
+Also handles a basic installation of the packaged mongo, in case we are
 migrating from that.
 
 **Please note that:**
@@ -20,7 +20,7 @@ Backup and Recovery
 -------------------
 
 If backupninja is configured, this formula will automatically configure an
-hourly ``mongodump`` backup of Mongo to the /var/backuups/mongodb directory.
+hourly ``mongodump`` backup of Mongo to the /var/backups/mongodb directory.
 
 This in turn can be backed up to a remote location -- see backupninja-formula
 for how to do this.
@@ -37,7 +37,7 @@ account for ``mongo_initiate_replica_set`` and ``mongo_restore_database``. Use t
 per-database owner account for ``mongo_reindex_database``.
 
 Full understanding of Mongo recovery and replica set recovery techniques should
-be gleaned from the Mongo documentation, but in brief:
+be gleaned from the [Mongo documentation](https://docs.mongodb.com/manual/core/backups/), but in brief:
 
 1. Ensure backup data is recovered into a local directory.
 
@@ -49,7 +49,7 @@ be gleaned from the Mongo documentation, but in brief:
 
    mongo_initiate_replica_set -u {user} -p {password} {replica-set-name} {master-node-fqdn}
 
-4. Recover the mongo databases
+4. Recover the Mongo databases
 
 ::
 
